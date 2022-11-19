@@ -1,0 +1,12 @@
+version: "2"
+
+services:
+  rocket:
+    build: rocket/
+    container_name: rocket
+
+  base:
+    build: base_station/
+    container_name: base_station
+    ports:
+      - "80:80"
