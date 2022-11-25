@@ -5,4 +5,4 @@ RUN apk update
 WORKDIR /rocket
 COPY . .
 
-CMD ["/bin/bash", "hello_rocket.sh"]
+CMD ["/bin/sh", "hello_rocket.sh"]
