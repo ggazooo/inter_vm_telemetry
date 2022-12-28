@@ -1,8 +1,15 @@
-FROM alpine:3.17
+FROM erichough/nfs-server
 
-RUN apk update
-
-WORKDIR /rocket
+COPY exports.txt /etc/exports
 COPY . .
 
-CMD ["/bin/bash", "hello_rocket.sh"]
+RUN adduser --disabled-password --gecos "" --uid 7689 test_user
+RUN mkdir --parents /nfs/test_share
+RUN chown test_user:test_user /var/lib/nfs
+RUN chown test_user:test_user /nfs/test_share
+
+RUN chmod +x hello_rocket.sh
+RUN ./hello_rocket.sh
+
+CMD ["tail", "-f", "/dev/null"]
+
