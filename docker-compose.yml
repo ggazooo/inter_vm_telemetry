@@ -2,11 +2,55 @@ version: "2"
 
 services:
   rocket:
-    build: rocket/
+    build:
+      context: ./rocket
+      dockerfile: Dockerfile
+    image: danbrill/nfs-server
+    cap_add:
+    - SYS_ADMIN
     container_name: rocket
-
+    environment:
+     NFS_LOG_LEVEL: DEBUG
+     #NFS_DISABLE_VERSION_3: "1"
+    hostname: rocket
+    networks:
+      nfs-server-bridge:
+        ipv4_address: 192.168.1.2
+    volumes:
+    - type: volume
+      source: rocket-volume
+      target: /nfs/test_share
   base:
-    build: base_station/
-    container_name: base_station
     ports:
-      - "80:80"
+      - "8080:8080"
+    depends_on:
+      rocket:
+        condition: service_started
+    build:
+      context: ./base_station
+      dockerfile: Dockerfile
+    container_name: base_station
+    hostname: base_station
+    networks:
+      nfs-server-bridge: null
+    volumes:
+    - type: volume
+      source: base_station-volume
+      target: /nfs/test_share
+volumes:
+  rocket-volume:
+    name: rocket-volume
+  base_station-volume:
+    name: base_station-volume
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.1.2"
+      device: ":/nfs/test_share"
+networks:
+  nfs-server-bridge:
+    name: nfs-server-bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.1.0/24
